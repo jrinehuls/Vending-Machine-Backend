@@ -2,10 +2,12 @@
 {
     public class ErrorResponse
     {
-        public string ErrorMessage;
+
         public ErrorResponse(string errorMessage)
         {
             ErrorMessage = errorMessage;
         }
+
+        public string ErrorMessage { get; private set; }
     }
 }

@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Data;
 using System.Net.Mime;
 using VendingMachine.Filters;
 using VendingMachine.Models.DTOs;
 using VendingMachine.Models.DTOs.Snack;
-using VendingMachine.Models.Entities;
 using VendingMachine.Services;
 
 namespace VendingMachine.Controllers
@@ -30,7 +28,7 @@ namespace VendingMachine.Controllers
             return Ok(await _snackService.GetSnacksAsync());
         }
 
-        [HttpPost("Purchase/snackId:long:min(1)", Name = "PurchaseSnack")]
+        [HttpPost("Purchase/{snackId:long:min(1)}", Name = "PurchaseSnack")]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType<SnackResponseDto>(200)]

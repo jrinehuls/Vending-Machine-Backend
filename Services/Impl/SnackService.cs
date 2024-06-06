@@ -29,7 +29,7 @@ namespace VendingMachine.Services.Impl
         public async Task<SnackResponseDto> PurchaseSnackAsync(long id, PurchaseSnackRequestDto requestDto)
         {
             Snack? snack = await _context.Snacks.FirstOrDefaultAsync(s => s.Id == id);
-            if (snack == null)
+            if (snack is null)
             {
                 throw new SnackNotFoundException(id);
             }

@@ -6,16 +6,16 @@ namespace VendingMachine.Models.DTOs.Snack
     {
 
         [Required]
-        [Range(0, int.MaxValue, ErrorMessage = "Value for {0} must be positive.")]
-        public int Ones { get; set; }
+        [Range(0, int.MaxValue, ErrorMessage = "Value for {0} must be at least {1}.")]
+        public int Ones { get; set; } = -1;
 
         [Required]
-        [Range(0, int.MaxValue, ErrorMessage = "Value for {0} must be positive.")]
-        public int Fives { get; set; }
+        [Range(0, int.MaxValue, ErrorMessage = "Value for {0} must be at least {1}.")]
+        public int Fives { get; set; } = -1;
 
         [Required]
-        [Range(0, int.MaxValue, ErrorMessage = "Value for {0} must be positive.")]
-        public int Quarters { get; set; }
+        [Range(0, int.MaxValue, ErrorMessage = "Value for {0} must be at least {1}.")]
+        public int Quarters { get; set; } = -1;
 
     }
 }
