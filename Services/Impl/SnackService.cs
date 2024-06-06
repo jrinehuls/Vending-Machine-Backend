@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using VendingMachine.Data;
-using VendingMachine.Models.DTOs;
+using VendingMachine.Exceptions;
+using VendingMachine.Models.DTOs.Snack;
+using VendingMachine.Models.Entities;
 
 namespace VendingMachine.Services.Impl
 {
@@ -15,14 +18,48 @@ namespace VendingMachine.Services.Impl
             _mapper = mapper;
         }
 
-        public Task<List<SnackResponseDto>> GetSnacksAsync()
+        public async Task<List<SnackResponseDto>> GetSnacksAsync()
         {
-            throw new NotImplementedException();
+            List<SnackResponseDto> responseDtos = await _context.Snacks
+                .Select(s => _mapper.Map<SnackResponseDto>(s))
+                .ToListAsync();
+            return responseDtos;
         }
 
-        public Task<SnackResponseDto> PurchaseSnackAsync(long id, PurchaseSnackRequestDto requestDto)
+        public async Task<SnackResponseDto> PurchaseSnackAsync(long id, PurchaseSnackRequestDto requestDto)
         {
-            throw new NotImplementedException();
+            Snack? snack = await _context.Snacks.FirstOrDefaultAsync(s => s.Id == id);
+            if (snack == null)
+            {
+                throw new SnackNotFoundException(id);
+            }
+
+            if (snack.Quantity < 1)
+            {
+                throw new SoldOutException();
+            }
+
+            double providedFunds = CalculateFunds(requestDto);
+
+            if (providedFunds < snack.Cost)
+            {
+                throw new InsufficientFundsException(providedFunds, snack);
+            }
+
+            snack.Quantity--;
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<SnackResponseDto>(snack);
+        }
+
+        private double CalculateFunds(PurchaseSnackRequestDto requestDto)
+        {
+            double funds = 0;
+            funds += requestDto.Fives * 5.00;
+            funds += requestDto.Ones * 1.00;
+            funds += requestDto.Quarters * 0.25;
+
+            return funds;
         }
     }
 }

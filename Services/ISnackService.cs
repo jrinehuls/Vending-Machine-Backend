@@ -1,4 +1,4 @@
-﻿using VendingMachine.Models.DTOs;
+﻿using VendingMachine.Models.DTOs.Snack;
 
 namespace VendingMachine.Services
 {

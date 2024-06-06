@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using VendingMachine.Data;
+using VendingMachine.Mappers;
 using VendingMachine.Services;
 using VendingMachine.Services.Impl;
 
@@ -13,6 +14,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddScoped<ISnackService, SnackService>();
 
 builder.Services.AddControllers();
+builder.Services.AddAutoMapper(typeof(MapperProfile));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

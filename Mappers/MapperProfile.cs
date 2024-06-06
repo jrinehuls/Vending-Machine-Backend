@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
-using VendingMachine.Models.DTOs;
+using VendingMachine.Models.DTOs.Snack;
 using VendingMachine.Models.Entities;
 
-namespace VendingMachine.Models
+namespace VendingMachine.Mappers
 {
     public class MapperProfile : Profile
     {
-        public MapperProfile() {
+        public MapperProfile()
+        {
             // <From, To>
             CreateMap<Snack, SnackResponseDto>();
         }

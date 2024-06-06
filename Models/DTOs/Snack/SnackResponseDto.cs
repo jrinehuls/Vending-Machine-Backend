@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace VendingMachine.Models.DTOs
+namespace VendingMachine.Models.DTOs.Snack
 {
     public class SnackResponseDto
     {

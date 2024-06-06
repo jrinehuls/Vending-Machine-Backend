@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace VendingMachine.Models.DTOs
+namespace VendingMachine.Models.DTOs.Snack
 {
     public class PurchaseSnackRequestDto
     {

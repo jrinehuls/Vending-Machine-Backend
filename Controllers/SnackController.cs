@@ -1,12 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
+using System.Net.Mime;
+using VendingMachine.Filters;
 using VendingMachine.Models.DTOs;
+using VendingMachine.Models.DTOs.Snack;
 using VendingMachine.Models.Entities;
 using VendingMachine.Services;
 
 namespace VendingMachine.Controllers
 {
     [ApiController]
+    [SnackFilter]
     [Route("[controller]")]
     public class SnackController : ControllerBase
     {
@@ -18,16 +22,27 @@ namespace VendingMachine.Controllers
         }
 
         [HttpGet("All", Name = "GetSnacks")]
-        public async Task<ActionResult<List<SnackResponseDto>>> GetSnacks(long id)
+        [Produces(MediaTypeNames.Application.Json)]
+        [ProducesResponseType<List<SnackResponseDto>>(200)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<List<SnackResponseDto>>> GetSnacks()
         {
-            return null;
+            return Ok(await _snackService.GetSnacksAsync());
         }
 
         [HttpPost("Purchase/snackId:long:min(1)", Name = "PurchaseSnack")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        [ProducesResponseType<SnackResponseDto>(200)]
+        [ProducesResponseType<ValidationProblemDetails>(400)]
+        [ProducesResponseType<ErrorResponse>(400)]
+        [ProducesResponseType<ErrorResponse>(404)]
+        [ProducesResponseType<ErrorResponse>(422)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult<SnackResponseDto>> PurchaseSnack([FromRoute] long snackId,
             [FromBody] PurchaseSnackRequestDto requestDto)
         {
-            return null;
+            return Ok(await _snackService.PurchaseSnackAsync(snackId, requestDto));
         }
 
     }
