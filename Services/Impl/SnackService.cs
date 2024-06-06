@@ -33,17 +33,16 @@ namespace VendingMachine.Services.Impl
 
             double funds = CalculateFunds(requestDto);
             double change = CalcChangeOrThrow(funds, snack.Cost);
-            int quarters = CalculateQuarters(change);
 
             snack.Quantity--;
             await _context.SaveChangesAsync();
 
             SnackResponseDto snackResponse = _mapper.Map<SnackResponseDto>(snack);
+            ChangeResponseDto changeResponse = CalculateChangeResponse(change);
             SnackChangeResponseDto responseDto = new()
             {
                 SnackResponseDto = snackResponse,
-                Change = change,
-                Quarters = quarters
+                ChangeResponseDto = changeResponse
             };
 
             return responseDto;
@@ -86,11 +85,13 @@ namespace VendingMachine.Services.Impl
             return change;
         }
 
-        private int CalculateQuarters(double change)
+        private ChangeResponseDto CalculateChangeResponse(double change)
         {
-            int quarters = (int)(change / 0.25);
+            ChangeResponseDto response = new ChangeResponseDto();
+            response.Change = change;
+            response.Quarters = (int)(change / 0.25);
 
-            return quarters;
+            return response;
         }
     }
 }
