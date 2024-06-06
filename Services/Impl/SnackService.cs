@@ -26,30 +26,45 @@ namespace VendingMachine.Services.Impl
             return responseDtos;
         }
 
-        public async Task<SnackResponseDto> PurchaseSnackAsync(long id, PurchaseSnackRequestDto requestDto)
+        public async Task<SnackChangeResponseDto> PurchaseSnackAsync(long id, PurchaseSnackRequestDto requestDto)
+        {
+            Snack snack = await FindByIdOrThrowAsync(id);
+            ThrowIfSoldOut(snack);
+
+            double funds = CalculateFunds(requestDto);
+            double change = CalcChangeOrThrow(funds, snack.Cost);
+            int quarters = CalculateQuarters(change);
+
+            snack.Quantity--;
+            await _context.SaveChangesAsync();
+
+            SnackResponseDto snackResponse = _mapper.Map<SnackResponseDto>(snack);
+            SnackChangeResponseDto responseDto = new()
+            {
+                SnackResponseDto = snackResponse,
+                Change = change,
+                Quarters = quarters
+            };
+
+            return responseDto;
+        }
+
+        private async Task<Snack> FindByIdOrThrowAsync(long id)
         {
             Snack? snack = await _context.Snacks.FirstOrDefaultAsync(s => s.Id == id);
             if (snack is null)
             {
                 throw new SnackNotFoundException(id);
             }
+            return snack;
+        }
 
+        private void ThrowIfSoldOut(Snack snack)
+        {
             if (snack.Quantity < 1)
             {
                 throw new SoldOutException();
             }
-
-            double providedFunds = CalculateFunds(requestDto);
-
-            if (providedFunds < snack.Cost)
-            {
-                throw new InsufficientFundsException(providedFunds, snack);
-            }
-
-            snack.Quantity--;
-            await _context.SaveChangesAsync();
-
-            return _mapper.Map<SnackResponseDto>(snack);
         }
 
         private double CalculateFunds(PurchaseSnackRequestDto requestDto)
@@ -60,6 +75,22 @@ namespace VendingMachine.Services.Impl
             funds += requestDto.Quarters * 0.25;
 
             return funds;
+        }
+
+        private double CalcChangeOrThrow(double funds, double cost) 
+        {
+            double change = funds - cost;
+            if (change < 0) {
+                throw new InsufficientFundsException(funds, cost);
+            }
+            return change;
+        }
+
+        private int CalculateQuarters(double change)
+        {
+            int quarters = (int)(change / 0.25);
+
+            return quarters;
         }
     }
 }

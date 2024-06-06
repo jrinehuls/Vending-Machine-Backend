@@ -31,13 +31,13 @@ namespace VendingMachine.Controllers
         [HttpPost("Purchase/{snackId:long:min(1)}", Name = "PurchaseSnack")]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
-        [ProducesResponseType<SnackResponseDto>(200)]
+        [ProducesResponseType<SnackChangeResponseDto>(200)]
         [ProducesResponseType<ValidationProblemDetails>(400)]
         [ProducesResponseType<ErrorResponse>(400)]
         [ProducesResponseType<ErrorResponse>(404)]
         [ProducesResponseType<ErrorResponse>(422)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<SnackResponseDto>> PurchaseSnack([FromRoute] long snackId,
+        public async Task<ActionResult<SnackChangeResponseDto>> PurchaseSnack([FromRoute] long snackId,
             [FromBody] PurchaseSnackRequestDto requestDto)
         {
             return Ok(await _snackService.PurchaseSnackAsync(snackId, requestDto));
