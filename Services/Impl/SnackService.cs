@@ -26,6 +26,13 @@ namespace VendingMachine.Services.Impl
             return responseDtos;
         }
 
+        public async Task<SnackResponseDto> GetSnackByIdAsync(long id)
+        {
+            Snack snack = await FindByIdOrThrowAsync(id);
+            SnackResponseDto responseDto = _mapper.Map<SnackResponseDto>(snack);
+            return responseDto;
+        }
+
         public async Task<SnackChangeResponseDto> PurchaseSnackAsync(long id, PurchaseSnackRequestDto requestDto)
         {
             Snack snack = await FindByIdOrThrowAsync(id);
@@ -93,5 +100,6 @@ namespace VendingMachine.Services.Impl
 
             return response;
         }
+
     }
 }

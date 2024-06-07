@@ -11,7 +11,7 @@ namespace VendingMachine.Controllers
     [ApiController]
     [SnackFilter]
     [EnableCors]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class SnackController : ControllerBase
     {
         private readonly ISnackService _snackService;
@@ -28,6 +28,17 @@ namespace VendingMachine.Controllers
         public async Task<ActionResult<List<SnackResponseDto>>> GetSnacks()
         {
             return Ok(await _snackService.GetSnacksAsync());
+        }
+
+
+        [HttpGet("{id:long:min(1)}", Name = "GetSnackById")]
+        [Produces(MediaTypeNames.Application.Json)]
+        [ProducesResponseType<List<SnackResponseDto>>(200)]
+        [ProducesResponseType<ErrorResponse>(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<List<SnackResponseDto>>> GetSnackById([FromRoute] long id)
+        {
+            return Ok(await _snackService.GetSnackByIdAsync(id));
         }
 
         [HttpPost("Purchase/{snackId:long:min(1)}", Name = "PurchaseSnack")]
