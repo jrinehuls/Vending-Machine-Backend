@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 using VendingMachine.Filters;
@@ -9,6 +10,7 @@ namespace VendingMachine.Controllers
 {
     [ApiController]
     [SnackFilter]
+    [EnableCors]
     [Route("[controller]")]
     public class SnackController : ControllerBase
     {
