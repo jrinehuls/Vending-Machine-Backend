@@ -5,6 +5,7 @@ using VendingMachine.Exceptions;
 using VendingMachine.Models.DTOs.Funds;
 using VendingMachine.Models.DTOs.Snack;
 using VendingMachine.Models.Entities;
+using VendingMachine.Models.Enums;
 
 namespace VendingMachine.Services.Impl
 {
@@ -39,8 +40,8 @@ namespace VendingMachine.Services.Impl
             Snack snack = await FindByIdOrThrowAsync(id);
             ThrowIfSoldOut(snack);
 
-            double funds = CalculateFunds(requestDto);
-            double change = CalcChangeOrThrow(funds, snack.Cost);
+            int funds = CalculateFunds(requestDto);
+            int change = CalcChangeOrThrow(funds, snack.Cost);
 
             snack.Quantity--;
             await _context.SaveChangesAsync();
@@ -76,52 +77,52 @@ namespace VendingMachine.Services.Impl
             }
         }
 
-        private double CalculateFunds(FundsRequestDto requestDto)
+        private int CalculateFunds(FundsRequestDto requestDto)
         {
-            double funds = 0;
-            funds += requestDto.Fives * 5.00;
-            funds += requestDto.Ones * 1.00;
-            funds += requestDto.Quarters * 0.25;
-            funds += requestDto.Dimes * 0.10;
-            funds += requestDto.Nickels * 0.05;
-            funds += requestDto.Pennies * 0.01;
+            int funds = 0;
+            funds += requestDto.Fives * (int)Currency.Five;
+            funds += requestDto.Ones * (int)Currency.One;
+            funds += requestDto.Quarters * (int)Currency.Quarter;
+            funds += requestDto.Dimes * (int)Currency.Dime;
+            funds += requestDto.Nickels * (int)Currency.Nickel;
+            funds += requestDto.Pennies * (int)Currency.Penny;
 
-            return Math.Round(funds, 2, MidpointRounding.AwayFromZero);
+            return funds;
         }
 
-        private double CalcChangeOrThrow(double funds, double cost) 
+        private int CalcChangeOrThrow(int funds, double cost) 
         {
-            double change = funds - cost;
+            int change = funds - (int)(100*cost);
             if (change < 0) {
                 throw new InsufficientFundsException(funds, cost);
             }
-            return Math.Round(change, 2, MidpointRounding.AwayFromZero);
+            return change;
         }
 
-        private FundsResponseDto CalculateChangeResponse(double change)
+        private FundsResponseDto CalculateChangeResponse(int change)
         {
 
             FundsResponseDto response = new FundsResponseDto();
 
-            response.TotalChange = change;
+            response.TotalChange = Math.Round((double)(change/100.0), 2, MidpointRounding.AwayFromZero);
 
-            int remainingChange = (int)(change*100);
-            response.Fives = (int)(remainingChange / 500);
+            int remainingChange = change;
+            response.Fives = remainingChange / (int)Currency.Five;
 
-            remainingChange %= 500;
-            response.Ones = (int)(remainingChange / 100);
+            remainingChange %= (int)Currency.Five;
+            response.Ones = remainingChange / (int)Currency.One;
 
-            remainingChange %= 100;
-            response.Quarters = (int)(remainingChange / 25);
+            remainingChange %= (int)Currency.One;
+            response.Quarters = remainingChange / (int)Currency.Quarter;
 
-            remainingChange %= 25;
-            response.Dimes = (int)(remainingChange / 10);
+            remainingChange %= (int)Currency.Quarter;
+            response.Dimes = remainingChange / (int)Currency.Dime;
 
-            remainingChange %= 10;
-            response.Nickles = (int)(remainingChange / 5);
+            remainingChange %= (int)Currency.Dime;
+            response.Nickles = remainingChange / (int)Currency.Nickel;
 
-            remainingChange %= 5;
-            response.Pennies = (int)(remainingChange / 1);
+            remainingChange %= (int)Currency.Nickel;
+            response.Pennies = remainingChange / (int)Currency.Penny;
 
             return response;
         }
