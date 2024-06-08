@@ -18,7 +18,7 @@ namespace VendingMachine.Services.Impl
             _mapper = mapper;
         }
 
-        public async Task<List<SnackResponseDto>> GetSnacksAsync()
+        public async Task<List<SnackResponseDto>> GetAllSnacksAsync()
         {
             List<SnackResponseDto> responseDtos = await _context.Snacks
                 .Select(s => _mapper.Map<SnackResponseDto>(s))
@@ -54,6 +54,8 @@ namespace VendingMachine.Services.Impl
 
             return responseDto;
         }
+
+        // Private methods
 
         private async Task<Snack> FindByIdOrThrowAsync(long id)
         {

@@ -27,7 +27,7 @@ namespace VendingMachine.Controllers
         [ProducesResponseType(500)]
         public async Task<ActionResult<List<SnackResponseDto>>> GetSnacks()
         {
-            return Ok(await _snackService.GetSnacksAsync());
+            return Ok(await _snackService.GetAllSnacksAsync());
         }
 
 
