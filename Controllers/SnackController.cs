@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 using VendingMachine.Filters;
 using VendingMachine.Models.DTOs;
+using VendingMachine.Models.DTOs.Funds;
 using VendingMachine.Models.DTOs.Snack;
 using VendingMachine.Services;
 
@@ -51,7 +52,7 @@ namespace VendingMachine.Controllers
         [ProducesResponseType<ErrorResponse>(422)]
         [ProducesResponseType(500)]
         public async Task<ActionResult<SnackChangeResponseDto>> PurchaseSnack([FromRoute] long snackId,
-            [FromBody] PurchaseSnackRequestDto requestDto)
+            [FromBody] FundsRequestDto requestDto)
         {
             return Ok(await _snackService.PurchaseSnackAsync(snackId, requestDto));
         }

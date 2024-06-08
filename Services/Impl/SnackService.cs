@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VendingMachine.Data;
 using VendingMachine.Exceptions;
+using VendingMachine.Models.DTOs.Funds;
 using VendingMachine.Models.DTOs.Snack;
 using VendingMachine.Models.Entities;
 
@@ -33,7 +34,7 @@ namespace VendingMachine.Services.Impl
             return responseDto;
         }
 
-        public async Task<SnackChangeResponseDto> PurchaseSnackAsync(long id, PurchaseSnackRequestDto requestDto)
+        public async Task<SnackChangeResponseDto> PurchaseSnackAsync(long id, FundsRequestDto requestDto)
         {
             Snack snack = await FindByIdOrThrowAsync(id);
             ThrowIfSoldOut(snack);
@@ -45,11 +46,11 @@ namespace VendingMachine.Services.Impl
             await _context.SaveChangesAsync();
 
             SnackResponseDto snackResponse = _mapper.Map<SnackResponseDto>(snack);
-            ChangeResponseDto changeResponse = CalculateChangeResponse(change);
+            FundsResponseDto changeResponse = CalculateChangeResponse(change);
             SnackChangeResponseDto responseDto = new()
             {
-                SnackResponseDto = snackResponse,
-                ChangeResponseDto = changeResponse
+                Snack = snackResponse,
+                Change = changeResponse
             };
 
             return responseDto;
@@ -75,14 +76,17 @@ namespace VendingMachine.Services.Impl
             }
         }
 
-        private double CalculateFunds(PurchaseSnackRequestDto requestDto)
+        private double CalculateFunds(FundsRequestDto requestDto)
         {
             double funds = 0;
             funds += requestDto.Fives * 5.00;
             funds += requestDto.Ones * 1.00;
             funds += requestDto.Quarters * 0.25;
+            funds += requestDto.Dimes * 0.10;
+            funds += requestDto.Nickels * 0.05;
+            funds += requestDto.Pennies * 0.01;
 
-            return funds;
+            return Math.Round(funds, 2, MidpointRounding.AwayFromZero);
         }
 
         private double CalcChangeOrThrow(double funds, double cost) 
@@ -91,14 +95,33 @@ namespace VendingMachine.Services.Impl
             if (change < 0) {
                 throw new InsufficientFundsException(funds, cost);
             }
-            return change;
+            return Math.Round(change, 2, MidpointRounding.AwayFromZero);
         }
 
-        private ChangeResponseDto CalculateChangeResponse(double change)
+        private FundsResponseDto CalculateChangeResponse(double change)
         {
-            ChangeResponseDto response = new ChangeResponseDto();
-            response.Change = change;
-            response.Quarters = (int)(change / 0.25);
+
+            FundsResponseDto response = new FundsResponseDto();
+
+            response.TotalChange = change;
+
+            int remainingChange = (int)(change*100);
+            response.Fives = (int)(remainingChange / 500);
+
+            remainingChange %= 500;
+            response.Ones = (int)(remainingChange / 100);
+
+            remainingChange %= 100;
+            response.Quarters = (int)(remainingChange / 25);
+
+            remainingChange %= 25;
+            response.Dimes = (int)(remainingChange / 10);
+
+            remainingChange %= 10;
+            response.Nickles = (int)(remainingChange / 5);
+
+            remainingChange %= 5;
+            response.Pennies = (int)(remainingChange / 1);
 
             return response;
         }

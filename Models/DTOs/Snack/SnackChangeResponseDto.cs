@@ -1,9 +1,11 @@
-﻿namespace VendingMachine.Models.DTOs.Snack
+﻿using VendingMachine.Models.DTOs.Funds;
+
+namespace VendingMachine.Models.DTOs.Snack
 {
     public class SnackChangeResponseDto
     {
-        public SnackResponseDto? SnackResponseDto { get; set; }
-        public ChangeResponseDto? ChangeResponseDto { get; set; }
+        public SnackResponseDto? Snack { get; set; }
+        public FundsResponseDto? Change { get; set; }
 
     }
 }

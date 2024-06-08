@@ -1,4 +1,5 @@
-﻿using VendingMachine.Models.DTOs.Snack;
+﻿using VendingMachine.Models.DTOs.Funds;
+using VendingMachine.Models.DTOs.Snack;
 
 namespace VendingMachine.Services
 {
@@ -6,6 +7,6 @@ namespace VendingMachine.Services
     {
         Task<List<SnackResponseDto>> GetAllSnacksAsync();
         Task<SnackResponseDto> GetSnackByIdAsync(long id);
-        Task<SnackChangeResponseDto> PurchaseSnackAsync(long id, PurchaseSnackRequestDto requestDto);
+        Task<SnackChangeResponseDto> PurchaseSnackAsync(long id, FundsRequestDto requestDto);
     }
 }
