@@ -1,8 +1,10 @@
-﻿namespace VendingMachine.Exceptions
+﻿using VendingMachine.Models.Entities;
+
+namespace VendingMachine.Exceptions
 {
-    public class SoldOutException : ApiException
+    public class SoldOutException<T> : ApiException where T : Snack
     {
-        public SoldOutException() : base("This product is sold out")
+        public SoldOutException(T item) : base($"{item.Name} is sold out")
         {
             this.statusCode = 422;
         }

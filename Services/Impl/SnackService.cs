@@ -73,7 +73,7 @@ namespace VendingMachine.Services.Impl
         {
             if (snack.Quantity < 1)
             {
-                throw new SoldOutException();
+                throw new SoldOutException<Snack>(snack);
             }
         }
 
