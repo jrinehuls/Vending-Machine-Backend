@@ -90,11 +90,11 @@ namespace VendingMachine.Services.Impl
             return funds;
         }
 
-        private int CalcChangeOrThrow(int funds, double cost) 
+        private int CalcChangeOrThrow(int funds, decimal cost) 
         {
             int change = funds - (int)(100*cost);
             if (change < 0) {
-                throw new InsufficientFundsException(funds, cost);
+                throw new InsufficientFundsException((decimal)(funds / 100.0), cost);
             }
             return change;
         }
@@ -119,7 +119,7 @@ namespace VendingMachine.Services.Impl
             response.Dimes = remainingChange / (int)Currency.Dime;
 
             remainingChange %= (int)Currency.Dime;
-            response.Nickles = remainingChange / (int)Currency.Nickel;
+            response.Nickels = remainingChange / (int)Currency.Nickel;
 
             remainingChange %= (int)Currency.Nickel;
             response.Pennies = remainingChange / (int)Currency.Penny;

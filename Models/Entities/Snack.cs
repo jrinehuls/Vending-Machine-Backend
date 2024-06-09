@@ -17,7 +17,7 @@ namespace VendingMachine.Models.Entities
 
         [Required]
         [Precision(4, 2)]
-        public double Cost { get; set; }
+        public decimal Cost { get; set; }
 
         [Required]
         public int Quantity { get; set; }

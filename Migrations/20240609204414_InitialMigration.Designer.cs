@@ -11,7 +11,7 @@ using VendingMachine.Data;
 namespace VendingMachine.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240606172530_InitialMigration")]
+    [Migration("20240609204414_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -32,9 +32,9 @@ namespace VendingMachine.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<double>("Cost")
+                    b.Property<decimal>("Cost")
                         .HasPrecision(4, 2)
-                        .HasColumnType("float(4)");
+                        .HasColumnType("decimal(4,2)");
 
                     b.Property<string>("Name")
                         .IsRequired()

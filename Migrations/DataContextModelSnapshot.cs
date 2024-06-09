@@ -29,9 +29,9 @@ namespace VendingMachine.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<double>("Cost")
+                    b.Property<decimal>("Cost")
                         .HasPrecision(4, 2)
-                        .HasColumnType("float(4)");
+                        .HasColumnType("decimal(4,2)");
 
                     b.Property<string>("Name")
                         .IsRequired()
