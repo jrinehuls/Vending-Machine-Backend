@@ -59,8 +59,7 @@ namespace VendingMachine.Services.Impl
         }
 
         // Private methods
-
-        private async Task<Snack> FindByIdOrThrowAsync(long id)
+        public virtual async Task<Snack> FindByIdOrThrowAsync(long id)
         {
             Snack? snack = await _snackRepository.GetSnackByIdAsync(id);
             if (snack is null)
