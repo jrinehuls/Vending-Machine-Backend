@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using VendingMachine.Data;
 using VendingMachine.Mappers;
+using VendingMachine.Repositories;
+using VendingMachine.Repositories.Impl;
 using VendingMachine.Services;
 using VendingMachine.Services.Impl;
 
@@ -12,6 +14,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 );
 
 builder.Services.AddScoped<ISnackService, SnackService>();
+builder.Services.AddScoped<ISnackRepository, SnackRepository>();
 
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(MapperProfile));
