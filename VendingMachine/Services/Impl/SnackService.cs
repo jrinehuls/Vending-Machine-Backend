@@ -6,23 +6,24 @@ using VendingMachine.Models.DTOs.Funds;
 using VendingMachine.Models.DTOs.Snack;
 using VendingMachine.Models.Entities;
 using VendingMachine.Models.Enums;
+using VendingMachine.Repositories;
 
 namespace VendingMachine.Services.Impl
 {
     public class SnackService : ISnackService
     {
-        private readonly DataContext _context;
+        private readonly ISnackRepository _snackRepository;
         private readonly IMapper _mapper;
 
-        public SnackService(DataContext context, IMapper mapper)
+        public SnackService(ISnackRepository snackRepository, IMapper mapper)
         {
-            _context = context;
+            _snackRepository = snackRepository;
             _mapper = mapper;
         }
 
         public async Task<List<SnackResponseDto>> GetAllSnacksAsync()
         {
-            List<SnackResponseDto> responseDtos = await _context.Snacks
+            List<SnackResponseDto> responseDtos = await _snackRepository.GetAllSnacks()
                 .Select(s => _mapper.Map<SnackResponseDto>(s))
                 .ToListAsync();
             return responseDtos;
@@ -44,7 +45,7 @@ namespace VendingMachine.Services.Impl
             int change = CalcChangeOrThrow(funds, snack.Cost);
 
             snack.Quantity--;
-            await _context.SaveChangesAsync();
+            await _snackRepository.SaveChangesAsync();
 
             SnackResponseDto snackResponse = _mapper.Map<SnackResponseDto>(snack);
             FundsResponseDto changeResponse = CalculateChangeResponse(change);
@@ -61,7 +62,7 @@ namespace VendingMachine.Services.Impl
 
         private async Task<Snack> FindByIdOrThrowAsync(long id)
         {
-            Snack? snack = await _context.Snacks.FirstOrDefaultAsync(s => s.Id == id);
+            Snack? snack = await _snackRepository.GetSnackByIdAsync(id);
             if (snack is null)
             {
                 throw new SnackNotFoundException(id);
