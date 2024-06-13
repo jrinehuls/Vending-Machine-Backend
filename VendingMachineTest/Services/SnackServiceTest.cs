@@ -99,7 +99,7 @@ namespace VendingMachineTest.Services
             SnackResponseDto actual = await mockService.Object.GetSnackByIdAsync(id);
 
             // Assert
-            Assert.Equal(expected.Name, actual.Name);
+            Assert.Equal(expected, actual);
         }
 
     }
