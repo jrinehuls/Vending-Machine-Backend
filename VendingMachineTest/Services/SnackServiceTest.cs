@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Moq;
 using VendingMachine.Exceptions;
+using VendingMachine.Mappers;
 using VendingMachine.Models.DTOs.Snack;
 using VendingMachine.Models.Entities;
 using VendingMachine.Repositories;
@@ -25,12 +26,16 @@ namespace VendingMachineTest.Services
         // I think CallBase invokes actual method
 
         private readonly Mock<ISnackRepository> _mockSnackRepository = new Mock<ISnackRepository>();
-        private readonly Mock<IMapper> _mockMapper = new Mock<IMapper>();
+        private readonly IMapper _mapper;
         private readonly SnackService _snackService;
 
         public SnackServiceTest()
         {
-            _snackService = new (_mockSnackRepository.Object, _mockMapper.Object);
+            MapperConfiguration config = new (cfg => {
+                cfg.AddProfile(new MapperProfile());
+            });
+            _mapper = config.CreateMapper();
+            _snackService = new (_mockSnackRepository.Object, _mapper);
         }
 
         [Fact]
@@ -91,15 +96,14 @@ namespace VendingMachineTest.Services
                 Quantity = 1
             };
 
-            Mock<SnackService> mockService = new (_mockSnackRepository.Object, _mockMapper.Object);
+            Mock<SnackService> mockService = new (_mockSnackRepository.Object, _mapper);
             mockService.Setup(x => x.FindByIdOrThrowAsync(id)).ReturnsAsync(snack);
-            _mockMapper.Setup(x => x.Map<SnackResponseDto>(snack)).Returns(expected);
 
             // Act
             SnackResponseDto actual = await mockService.Object.GetSnackByIdAsync(id);
 
             // Assert
-            Assert.Equal(expected, actual);
+            Assert.Equal(expected.ToString(), actual.ToString());
         }
 
     }
