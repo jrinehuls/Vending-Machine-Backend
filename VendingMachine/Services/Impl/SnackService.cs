@@ -23,9 +23,10 @@ namespace VendingMachine.Services.Impl
 
         public async Task<List<SnackResponseDto>> GetAllSnacksAsync()
         {
-            List<SnackResponseDto> responseDtos = await _snackRepository.GetAllSnacks()
+            List<Snack> snacks = await _snackRepository.GetAllSnacksAsync();
+            List<SnackResponseDto> responseDtos = snacks
                 .Select(s => _mapper.Map<SnackResponseDto>(s))
-                .ToListAsync();
+                .ToList();
             return responseDtos;
         }
 

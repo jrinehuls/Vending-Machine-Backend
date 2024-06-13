@@ -6,7 +6,7 @@ namespace VendingMachine.Repositories
     {
         Task<Snack?> GetSnackByIdAsync(long id);
 
-        IQueryable<Snack> GetAllSnacks();
+        Task<List<Snack>> GetAllSnacksAsync();
 
         Task SaveChangesAsync();
     }

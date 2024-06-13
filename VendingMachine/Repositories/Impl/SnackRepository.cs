@@ -19,9 +19,9 @@ namespace VendingMachine.Repositories.Impl
             return await _context.Snacks.FirstOrDefaultAsync(s => s.Id == id);
         }
 
-        public IQueryable<Snack> GetAllSnacks()
+        public async Task<List<Snack>> GetAllSnacksAsync()
         {
-            return _context.Snacks.AsQueryable();
+            return await _context.Snacks.ToListAsync();
         }
 
         public async Task SaveChangesAsync()
