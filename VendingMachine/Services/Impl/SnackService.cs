@@ -70,7 +70,7 @@ namespace VendingMachine.Services.Impl
             return snack;
         }
 
-        public void ThrowIfSoldOut(Snack snack)
+        public virtual void ThrowIfSoldOut(Snack snack)
         {
             if (snack.Quantity < 1)
             {
@@ -91,7 +91,7 @@ namespace VendingMachine.Services.Impl
             return funds;
         }
 
-        public int CalcChangeOrThrow(int funds, decimal cost) 
+        public virtual int CalcChangeOrThrow(int funds, decimal cost) 
         {
             int change = funds - (int)(100*cost);
             if (change < 0) {

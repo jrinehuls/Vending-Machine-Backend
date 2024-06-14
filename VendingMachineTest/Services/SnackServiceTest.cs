@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+using Microsoft.Extensions.Hosting;
 using Moq;
 using VendingMachine.Exceptions;
 using VendingMachine.Mappers;
@@ -209,6 +210,37 @@ namespace VendingMachineTest.Services
         }
 
         [Fact]
+        public async void GetAllSnacksAsync_ReturnsList()
+        {
+            // Arrange
+
+            List<Snack> snacks = new() 
+            { 
+                new Snack { Id = 1, Name = "Jerky", Cost = new decimal(3.50), Quantity = 1 },
+                new Snack { Id = 2, Name = "Cheese", Cost = new decimal(1.99), Quantity = 4 },
+                new Snack { Id = 3, Name = "Chackers", Cost = new decimal(1.50), Quantity = 0 }
+            };
+
+            _mockSnackRepository.Setup(x => x.GetAllSnacksAsync()).ReturnsAsync(snacks);
+
+            List<SnackResponseDto> expected = new() {
+                new SnackResponseDto { Id = 1, Name = "Jerky", Cost = new decimal(3.50), Quantity = 1 },
+                new SnackResponseDto { Id = 2, Name = "Cheese", Cost = new decimal(1.99), Quantity = 4 },
+                new SnackResponseDto { Id = 3, Name = "Chackers", Cost = new decimal(1.50), Quantity = 0 }
+            };
+
+            // Act
+            List<SnackResponseDto> actual = await _snackService.GetAllSnacksAsync();
+
+            // Assert
+            for (int i = 0; i < actual.Count(); i++)
+            {
+                Assert.Equal(actual[i].ToString(), expected[i].ToString());
+            }
+
+        }
+
+        [Fact]
         public async void GetSnackByIdAsync_ReturnsSnackResponseDto()
         {
             // Arrange
@@ -237,6 +269,190 @@ namespace VendingMachineTest.Services
 
             // Assert
             Assert.Equal(expected.ToString(), actual.ToString());
+        }
+
+        [Fact]
+        public async void GetSnackByIdAsync_ThrowsSnackNotFound()
+        {
+            // Arrange
+            long id = 1;
+
+            Mock<SnackService> mockService = new(_mockSnackRepository.Object, _mapper);
+            mockService.Setup(x => x.FindByIdOrThrowAsync(id)).Throws(new SnackNotFoundException(id));
+
+            // Act
+            SnackNotFoundException actual = await Assert.ThrowsAsync<SnackNotFoundException>(
+                async () => await mockService.Object.GetSnackByIdAsync(id));
+
+            // Assert
+            Assert.Equal($"Snack with id {id} not found", actual.Message);
+        }
+
+        [Fact]
+        public async void PurchaseSnackAsync_ReturnsValue()
+        {
+            // Arrange Inputs
+            long id = 1;
+
+            FundsRequestDto requestDto = new FundsRequestDto()
+            {   // $6.41
+                Fives = 1, Ones = 1, Quarters = 1,
+                Dimes = 1, Nickels = 1, Pennies = 1
+            };
+
+            // Arrange Mock
+            Snack mockSnack = new()
+            {
+                Id = id,
+                Name = "Snacky Poo",
+                Cost = new decimal(3.99),
+                Quantity = 1
+            };
+
+            Mock<SnackService> mockService = new(_mockSnackRepository.Object, _mapper);
+            mockService.Setup(x => x.FindByIdOrThrowAsync(It.IsAny<long>())).ReturnsAsync(mockSnack);
+
+            // Arrange Expected
+            SnackResponseDto expectedSnack = new ()
+            {
+                Id = id,
+                Name = "Snacky Poo",
+                Cost = new decimal(3.99),
+                Quantity = 1
+            };
+
+            FundsResponseDto expectedFunds = new ()
+            {   // $6.41 - $3.99 = $2.42
+                TotalChange = 2.42,
+                Fives = 0,
+                Ones = 2,
+                Quarters = 1,
+                Dimes = 1,
+                Nickels = 1,
+                Pennies = 2
+            };
+
+            SnackChangeResponseDto expected = new ()
+            {
+                Snack = expectedSnack,
+                Change = expectedFunds
+            };
+
+            // Act
+            SnackChangeResponseDto actual = await mockService.Object.PurchaseSnackAsync(id, requestDto);
+
+            // Assert
+            _mockSnackRepository.Verify(mock => mock.SaveChangesAsync(), Times.Once());
+            Assert.Equal(expected.ToString(), actual.ToString());
+
+        }
+
+        [Fact]
+        public async void PurchaseSnackAsync_ThrowSnackNotFound()
+        {
+            // Arrange
+            long id = 1;
+
+            FundsRequestDto requestDto = new FundsRequestDto()
+            {   // $6.41
+                Fives = 1,
+                Ones = 1,
+                Quarters = 1,
+                Dimes = 1,
+                Nickels = 1,
+                Pennies = 1
+            };
+
+            // Arrange Mock
+            Snack mockSnack = new()
+            {
+                Id = id,
+                Name = "Snacky Poo",
+                Cost = new decimal(3.99),
+                Quantity = 1
+            };
+            Mock<SnackService> mockService = new(_mockSnackRepository.Object, _mapper);
+            mockService.Setup(x => x.FindByIdOrThrowAsync(It.IsAny<long>())).Throws(new SnackNotFoundException(id));
+
+            // Act
+            SnackNotFoundException actual = await Assert.ThrowsAsync<SnackNotFoundException>(
+                async () => await mockService.Object.PurchaseSnackAsync(id, requestDto));
+
+            // Assert
+            Assert.Equal($"Snack with id {id} not found", actual.Message);
+        }
+
+        [Fact]
+        public async void PurchaseSnackAsync_ThrowSoldOut()
+        {
+            // Arrange
+            long id = 1;
+
+            FundsRequestDto requestDto = new FundsRequestDto()
+            {   // $6.41
+                Fives = 1,
+                Ones = 1,
+                Quarters = 1,
+                Dimes = 1,
+                Nickels = 1,
+                Pennies = 1
+            };
+
+            // Arrange Mock
+            Snack mockSnack = new()
+            {
+                Id = id,
+                Name = "Snacky Poo",
+                Cost = new decimal(3.99),
+                Quantity = 1
+            };
+            Mock<SnackService> mockService = new(_mockSnackRepository.Object, _mapper);
+            mockService.Setup(x => x.FindByIdOrThrowAsync(It.IsAny<long>())).ReturnsAsync(mockSnack);
+            mockService.Setup(x => x.ThrowIfSoldOut(mockSnack)).Throws(new SoldOutException<Snack>(mockSnack));
+
+            // Act
+            SoldOutException<Snack> actual = await Assert.ThrowsAsync<SoldOutException<Snack>>(
+                async () => await mockService.Object.PurchaseSnackAsync(id, requestDto));
+
+            // Assert
+            Assert.Equal($"{mockSnack.Name} is sold out", actual.Message);
+        }
+
+        [Fact]
+        public async void PurchaseSnackAsync_ThrowInsufficientFunds()
+        {
+            // Arrange
+            long id = 1;
+
+            FundsRequestDto requestDto = new FundsRequestDto()
+            {   // $6.41
+                Fives = 1,
+                Ones = 1,
+                Quarters = 1,
+                Dimes = 1,
+                Nickels = 1,
+                Pennies = 1
+            };
+
+            // Arrange Mock
+            Snack mockSnack = new()
+            {
+                Id = id,
+                Name = "Snacky Poo",
+                Cost = new decimal(3.99),
+                Quantity = 1
+            };
+            Mock<SnackService> mockService = new(_mockSnackRepository.Object, _mapper);
+            mockService.Setup(x => x.FindByIdOrThrowAsync(It.IsAny<long>())).ReturnsAsync(mockSnack);
+            mockService.Setup(x => x.CalcChangeOrThrow(It.IsAny<int>(), It.IsAny<decimal>()))
+                .Throws(new InsufficientFundsException(new decimal(1.00), mockSnack.Cost));
+
+            // Act
+            InsufficientFundsException actual = await Assert.ThrowsAsync<InsufficientFundsException>(
+                async () => await mockService.Object.PurchaseSnackAsync(id, requestDto));
+
+            // Assert
+            Assert.Equal($"You only provided $1.00 for a snack that costs $3.99.", actual.Message);
         }
 
     }
