@@ -59,7 +59,7 @@ namespace VendingMachine.Services.Impl
             return responseDto;
         }
 
-        // Private methods
+        // Non-Interface methods
         public virtual async Task<Snack> FindByIdOrThrowAsync(long id)
         {
             Snack? snack = await _snackRepository.GetSnackByIdAsync(id);
@@ -70,7 +70,7 @@ namespace VendingMachine.Services.Impl
             return snack;
         }
 
-        private void ThrowIfSoldOut(Snack snack)
+        public void ThrowIfSoldOut(Snack snack)
         {
             if (snack.Quantity < 1)
             {
@@ -78,7 +78,7 @@ namespace VendingMachine.Services.Impl
             }
         }
 
-        private int CalculateFunds(FundsRequestDto requestDto)
+        public int CalculateFunds(FundsRequestDto requestDto)
         {
             int funds = 0;
             funds += requestDto.Fives * (int)Currency.Five;
@@ -91,7 +91,7 @@ namespace VendingMachine.Services.Impl
             return funds;
         }
 
-        private int CalcChangeOrThrow(int funds, decimal cost) 
+        public int CalcChangeOrThrow(int funds, decimal cost) 
         {
             int change = funds - (int)(100*cost);
             if (change < 0) {
@@ -100,7 +100,7 @@ namespace VendingMachine.Services.Impl
             return change;
         }
 
-        private FundsResponseDto CalculateChangeResponse(int change)
+        public FundsResponseDto CalculateChangeResponse(int change)
         {
 
             FundsResponseDto response = new FundsResponseDto();

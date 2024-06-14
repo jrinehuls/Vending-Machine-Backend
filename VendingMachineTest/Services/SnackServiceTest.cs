@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Query.Internal;
 using Moq;
 using VendingMachine.Exceptions;
 using VendingMachine.Mappers;
+using VendingMachine.Models.DTOs.Funds;
 using VendingMachine.Models.DTOs.Snack;
 using VendingMachine.Models.Entities;
 using VendingMachine.Repositories;
@@ -76,7 +77,139 @@ namespace VendingMachineTest.Services
         }
 
         [Fact]
-        public async void GetSnackByIdAsync()
+        public void ThrowIfSoldOut_ThrowsSoldOutEx()
+        {
+            // Arrange
+            Snack snackNoQty = new ()
+            {
+                Id= 1,
+                Name = "Pretzels",
+                Cost = 1,
+                Quantity = 0
+            };
+
+            // Act
+            SoldOutException<Snack> ex = Assert.Throws<SoldOutException<Snack>>(() => _snackService.ThrowIfSoldOut(snackNoQty));
+
+            // Assert
+            Assert.Equal($"{snackNoQty.Name} is sold out", ex.Message);
+            Assert.Equal(422, ex.StatusCode);
+        }
+
+        [Fact]
+        public void ThrowIfSoldOut_DoesNotThrow()
+        {
+            // Arrange
+            Snack snackNoQty = new()
+            {
+                Id = 1,
+                Name = "Pretzels",
+                Cost = 1,
+                Quantity = 1
+            };
+
+            // Act
+            Exception ex = Record.Exception(() => _snackService.ThrowIfSoldOut(snackNoQty));
+
+            // Assert
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        public void CalculateFunds_OneOfEachCurrency_Return641()
+        {
+            // Arrange
+            FundsRequestDto requestDto = new()
+            {
+                Fives = 1,
+                Ones = 1,
+                Quarters = 1,
+                Dimes = 1,
+                Nickels = 1,
+                Pennies = 1
+            };
+
+            int expected = 641;
+
+            // Act
+            int actual = _snackService.CalculateFunds(requestDto);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void CalcChangeOrThrow_FundsLessThanCost_Throw()
+        {
+            // Arrange
+            int funds = 100;
+            decimal cost = new decimal(1.01);
+            string expectedMessage = $"You only provided $1.00 for a snack that costs $1.01.";
+
+            // Act
+            InsufficientFundsException ex = Assert.Throws<InsufficientFundsException>(
+                () => _snackService.CalcChangeOrThrow(funds, cost));
+
+            // Assert
+            Assert.Equal(expectedMessage, ex.Message);
+            Assert.Equal(400, ex.StatusCode);
+        }
+
+        [Fact]
+        public void CalcChangeOrThrow_FundsGreaterThanCost_ReturnsChange()
+        {
+            // Arrange
+            int funds = 200;
+            decimal cost = new decimal(1.99);
+            int expected = 1;
+
+            // Act
+            int actual = _snackService.CalcChangeOrThrow(funds, cost);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void CalcChangeOrThrow_FundsEqualCost_ReturnsZero()
+        {
+            // Arrange
+            int funds = 200;
+            decimal cost = new decimal(2.00);
+            int expected = 0;
+
+            // Act
+            int actual = _snackService.CalcChangeOrThrow(funds, cost);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void CalculateChangeResponse_641_ReturnsOneOfEachCurrency()
+        {
+            // Arrange
+            int input = 641;
+            FundsResponseDto expected = new()
+            {
+                TotalChange = 6.41,
+                Fives = 1,
+                Ones = 1,
+                Quarters = 1,
+                Dimes = 1,
+                Nickels = 1,
+                Pennies = 1
+            };
+
+            // Act
+            FundsResponseDto actual = _snackService.CalculateChangeResponse(input);
+
+            // Assert
+            Assert.Equal(expected.ToString(), actual.ToString());
+        }
+
+        [Fact]
+        public async void GetSnackByIdAsync_ReturnsSnackResponseDto()
         {
             // Arrange
             long id = 1;
